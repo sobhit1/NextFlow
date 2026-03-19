@@ -57,13 +57,49 @@ export async function executeWorkflowLocally(nodes: AppNode[], edges: Edge[]) {
     const sortedNodeIds = topologicalSort(nodes, edges);
     console.log("Execution order:", sortedNodeIds);
     
-    // Simulate sequential execution
-    for (const nodeId of sortedNodeIds) {
-      const node = nodes.find(n => n.id === nodeId);
-      console.log(`Executing node: ${node?.id} (${node?.type})`);
-      // Mock execution delay
-      await new Promise(resolve => setTimeout(resolve, 500));
+    // Map to store the execution Promise for each node
+    const executionPromises = new Map<string, Promise<void>>();
+    
+    // Build an adjacency list for incoming edges (dependencies)
+    const incomingEdges: Record<string, string[]> = {};
+    for (const node of nodes) {
+      incomingEdges[node.id] = [];
     }
+    for (const edge of edges) {
+      if (edge.source && edge.target) {
+        incomingEdges[edge.target].push(edge.source);
+      }
+    }
+
+    // Function to execute a single node
+    const executeNode = async (nodeId: string) => {
+      const node = nodes.find(n => n.id === nodeId);
+      if (!node) return;
+
+      // 1. Await all Dependencies
+      const deps = incomingEdges[nodeId];
+      if (deps.length > 0) {
+        const depPromises = deps
+          .map(depId => executionPromises.get(depId))
+          .filter(Boolean) as Promise<void>[];
+        await Promise.all(depPromises);
+      }
+
+      // 2. Execute this node
+      console.log(`[START] Executing node: ${node.id} (${node.type})`);
+      // Mock execution delay
+      await new Promise(resolve => setTimeout(resolve, Math.random() * 500 + 500));
+      console.log(`[DONE] Finished node: ${node.id}`);
+    };
+
+    // Start execution for all nodes
+    for (const nodeId of sortedNodeIds) {
+      const promise = executeNode(nodeId);
+      executionPromises.set(nodeId, promise);
+    }
+
+    // Await all nodes to finish
+    await Promise.all(executionPromises.values());
     
     console.log("Workflow execution complete");
   } catch (error) {
