@@ -15,6 +15,9 @@ import { DefaultNode } from "./nodes/DefaultNode";
 import { TextNode } from "./nodes/TextNode";
 
 import { useWorkflowStore } from "@/store/workflowStore";
+import { isValidConnection } from "@/lib/connectionValidation";
+import { useCallback } from "react";
+import { Connection, Edge } from "@xyflow/react";
 
 export default function Canvas() {
   const nodes = useWorkflowStore((state) => state.nodes);
@@ -28,6 +31,11 @@ export default function Canvas() {
     text: TextNode,
   }), []);
 
+  const checkConnection = useCallback(
+    (connection: Connection | Edge) => isValidConnection(connection, nodes),
+    [nodes]
+  );
+
   return (
     <div className="w-full h-full">
       <ReactFlow
@@ -37,6 +45,7 @@ export default function Canvas() {
         onNodesChange={onNodesChange}
         onEdgesChange={onEdgesChange}
         onConnect={onConnect}
+        isValidConnection={checkConnection}
         fitView
         colorMode="dark"
         minZoom={0.1}
