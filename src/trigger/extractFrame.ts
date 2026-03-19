@@ -21,6 +21,7 @@ export const extractFrameTask = task({
     const outputFile = path.join(tmpDir, `frame-${Date.now()}.jpg`);
 
     await new Promise((resolve, reject) => {
+      // @ts-ignore: ffmpeg takes strings or numbers but typed as numbers mostly
       ffmpeg(videoUrl)
         .screenshots({
           timestamps: [typeof timestamp === 'string' ? timestamp : Number(timestamp)],

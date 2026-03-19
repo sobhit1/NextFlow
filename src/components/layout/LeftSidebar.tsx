@@ -1,7 +1,8 @@
 "use client";
 
 import { useWorkflowStore, AppNode } from "@/store/workflowStore";
-import { Type, Image as ImageIcon, Video, BrainCircuit, Crop, Film } from "lucide-react";
+import { Type, Image as ImageIcon, Video, BrainCircuit, Crop, Film, Plus, FolderOpen, Settings, LayoutGrid, Workflow } from "lucide-react";
+import { UserButton } from "@clerk/nextjs";
 import { nanoid } from "nanoid";
 
 const NODE_TYPES = [
