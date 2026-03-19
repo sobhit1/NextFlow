@@ -16,8 +16,10 @@ import { TextNode } from "./nodes/TextNode";
 
 import { useWorkflowStore } from "@/store/workflowStore";
 import { isValidConnection } from "@/lib/connectionValidation";
+import { executeWorkflowLocally } from "@/lib/executionEngine";
 import { useCallback } from "react";
 import { Connection, Edge } from "@xyflow/react";
+import { Play } from "lucide-react";
 
 export default function Canvas() {
   const nodes = useWorkflowStore((state) => state.nodes);
@@ -36,8 +38,12 @@ export default function Canvas() {
     [nodes, edges]
   );
 
+  const handleRun = () => {
+    executeWorkflowLocally(nodes, edges);
+  };
+
   return (
-    <div className="w-full h-full">
+    <div className="w-full h-full relative">
       <ReactFlow
         nodes={nodes}
         edges={edges}
@@ -63,6 +69,17 @@ export default function Canvas() {
           className="bg-[var(--color-card-background)] border border-[var(--color-card-border)] rounded-md overflow-hidden"
         />
       </ReactFlow>
+
+      {/* Floating Run Button */}
+      <div className="absolute top-4 right-4 z-10">
+        <button
+          onClick={handleRun}
+          className="flex items-center gap-2 px-4 py-2 bg-[var(--color-primary)] text-[var(--color-primary-foreground)] rounded-lg font-semibold shadow-lg hover:bg-opacity-90 transition-all active:scale-95"
+        >
+          <Play size={16} className="fill-current" />
+          Run Workflow
+        </button>
+      </div>
     </div>
   );
 }
