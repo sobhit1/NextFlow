@@ -49,7 +49,7 @@ export default function Canvas() {
   }), []);
 
   const checkConnection = useCallback(
-    (connection: Connection) => isValidConnection(connection, nodes, edges),
+    (connection: Connection | Edge) => isValidConnection(connection as Connection, nodes, edges),
     [nodes, edges]
   );
 
