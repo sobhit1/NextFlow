@@ -22,13 +22,17 @@ import { ExtractFrameNode } from "./nodes/ExtractFrameNode";
 import { useWorkflowStore } from "@/store/workflowStore";
 import { isValidConnection } from "@/lib/connectionValidation";
 import { executeWorkflowLocally } from "@/lib/executionEngine";
-import { useCallback } from "react";
+import { saveWorkflow } from "@/app/actions/workflow";
+import { useCallback, useState } from "react";
 import { Connection, Edge } from "@xyflow/react";
-import { Play } from "lucide-react";
+import { Play, Save, Loader2 } from "lucide-react";
 
 export default function Canvas() {
   const nodes = useWorkflowStore((state) => state.nodes);
   const edges = useWorkflowStore((state) => state.edges);
+  const workflowId = useWorkflowStore((state) => state.workflowId);
+  const workflowName = useWorkflowStore((state) => state.workflowName);
+  const setWorkflowMetadata = useWorkflowStore((state) => state.setWorkflowMetadata);
   const onNodesChange = useWorkflowStore((state) => state.onNodesChange);
   const onEdgesChange = useWorkflowStore((state) => state.onEdgesChange);
   const onConnect = useWorkflowStore((state) => state.onConnect);
@@ -45,12 +49,24 @@ export default function Canvas() {
   }), []);
 
   const checkConnection = useCallback(
-    (connection: Connection | Edge) => isValidConnection(connection, nodes, edges),
+    (connection: Connection) => isValidConnection(connection, nodes, edges),
     [nodes, edges]
   );
 
+  const [isSaving, setIsSaving] = useState(false);
+
   const handleRun = () => {
     executeWorkflowLocally(nodes, edges, updateNodeData);
+  };
+
+  const handleSave = async () => {
+    setIsSaving(true);
+    const res = await saveWorkflow(workflowId, workflowName, nodes, edges);
+    if (res.success && res.workflowId) {
+      setWorkflowMetadata(res.workflowId, workflowName);
+      // Could show a toast here
+    }
+    setIsSaving(false);
   };
 
   return (
@@ -81,14 +97,33 @@ export default function Canvas() {
         />
       </ReactFlow>
 
-      {/* Floating Run Button */}
-      <div className="absolute top-4 right-4 z-10">
+      {/* Top Right Floating Actions */}
+      <div className="absolute top-4 right-4 z-10 flex items-center gap-3">
+        <div className="bg-[rgba(0,0,0,0.5)] border border-[var(--color-card-border)] backdrop-blur-md rounded-lg p-1 px-3 flex items-center shadow-lg">
+          <input 
+            type="text" 
+            value={workflowName}
+            onChange={(e) => setWorkflowMetadata(workflowId, e.target.value)}
+            className="bg-transparent text-sm font-medium text-[var(--color-foreground)] outline-none w-32 focus:w-48 transition-all"
+            placeholder="Untitled..."
+          />
+        </div>
+
+        <button
+          onClick={handleSave}
+          disabled={isSaving}
+          className="flex items-center gap-2 px-3 py-2 bg-[var(--color-card-background)] border border-[var(--color-card-border)] text-[var(--color-foreground)] rounded-lg font-medium shadow-lg hover:bg-[rgba(255,255,255,0.05)] transition-all active:scale-95 disabled:opacity-50"
+        >
+          {isSaving ? <Loader2 size={16} className="animate-spin text-zinc-400" /> : <Save size={16} className="text-zinc-400" />}
+          Save
+        </button>
+
         <button
           onClick={handleRun}
           className="flex items-center gap-2 px-4 py-2 bg-[var(--color-primary)] text-[var(--color-primary-foreground)] rounded-lg font-semibold shadow-lg hover:bg-opacity-90 transition-all active:scale-95"
         >
           <Play size={16} className="fill-current" />
-          Run Workflow
+          Run
         </button>
       </div>
     </div>

@@ -13,6 +13,7 @@
     "@clerk/themes": "^2.4.57",
     "@ffmpeg-installer/ffmpeg": "^1.1.0",
     "@google/generative-ai": "^0.24.1",
+    "@prisma/client": "^7.5.0",
     "@trigger.dev/sdk": "^4.4.3",
     "@types/fluent-ffmpeg": "^2.1.28",
     "@uppy/core": "^5.2.0",
@@ -39,6 +40,7 @@
     "@types/react-dom": "^19",
     "eslint": "^9",
     "eslint-config-next": "16.2.0",
+    "prisma": "^7.5.0",
     "tailwindcss": "^4",
     "typescript": "^5"
   }
