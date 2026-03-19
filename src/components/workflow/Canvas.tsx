@@ -32,8 +32,8 @@ export default function Canvas() {
   }), []);
 
   const checkConnection = useCallback(
-    (connection: Connection | Edge) => isValidConnection(connection, nodes),
-    [nodes]
+    (connection: Connection | Edge) => isValidConnection(connection, nodes, edges),
+    [nodes, edges]
   );
 
   return (

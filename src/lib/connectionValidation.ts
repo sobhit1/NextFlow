@@ -1,5 +1,6 @@
 import { Connection, Node, Edge } from "@xyflow/react";
 import { AppNode } from "@/store/workflowStore";
+import { hasCycle } from "./dagValidation";
 
 // Type definitions for handle data types
 export type DataType = "text" | "image" | "video" | "any";
@@ -43,7 +44,7 @@ export function getTargetHandleType(nodeType: string, handleId: string | null): 
 }
 
 // The validation function for React Flow
-export function isValidConnection(connection: Connection | Edge, nodes: AppNode[]): boolean {
+export function isValidConnection(connection: Connection | Edge, nodes: AppNode[], edges: Edge[]): boolean {
   if (!connection.source || !connection.target) return false;
 
   const sourceNode = nodes.find((n) => n.id === connection.source);
@@ -54,7 +55,9 @@ export function isValidConnection(connection: Connection | Edge, nodes: AppNode[
   const sourceType = getSourceHandleType(sourceNode.type || "default", connection.sourceHandle || null);
   const targetType = getTargetHandleType(targetNode.type || "default", connection.targetHandle || null);
 
-  if (sourceType === "any" || targetType === "any") return true;
+  if (sourceType === "any" || targetType === "any") {
+    return !hasCycle(connection, nodes, edges);
+  }
 
-  return sourceType === targetType;
+  return sourceType === targetType && !hasCycle(connection, nodes, edges);
 }
