@@ -53,6 +53,8 @@ export function topologicalSort(nodes: AppNode[], edges: Edge[]): string[] {
 }
 
 import { executeLlmAction } from "@/app/actions/runLlm";
+import { executeCropAction } from "@/app/actions/runCrop";
+import { executeExtractAction } from "@/app/actions/runExtract";
 
 export async function executeWorkflowLocally(
   nodes: AppNode[], 
@@ -128,9 +130,73 @@ export async function executeWorkflowLocally(
           } else {
             updateNodeData(node.id, { error: res.error, isExecuting: false });
           }
+        } else if (node.type === "cropImage") {
+          let imageUrl = (node.data.image_url as string) || "";
+          let x_percent = (node.data.x_percent as string) || "0";
+          let y_percent = (node.data.y_percent as string) || "0";
+          let width_percent = (node.data.width_percent as string) || "100";
+          let height_percent = (node.data.height_percent as string) || "100";
+
+          for (const depId of deps) {
+            const edge = edges.find(e => e.source === depId && e.target === node.id);
+            const depNode = nodes.find(n => n.id === depId);
+            if (!edge || !depNode) continue;
+
+            const val = depNode.data.text || depNode.data.imageUrl || depNode.data.videoUrl;
+            if (edge.targetHandle === "image_url" && val) imageUrl = val as string;
+            if (edge.targetHandle === "x_percent" && val) x_percent = val as string;
+            if (edge.targetHandle === "y_percent" && val) y_percent = val as string;
+            if (edge.targetHandle === "width_percent" && val) width_percent = val as string;
+            if (edge.targetHandle === "height_percent" && val) height_percent = val as string;
+          }
+
+          if (!imageUrl) throw new Error("Missing image_url for Crop");
+
+          const res = await executeCropAction({ imageUrl, x_percent, y_percent, width_percent, height_percent });
+          if (res.success) {
+            updateNodeData(node.id, { text: res.url, isExecuting: false });
+          } else {
+            updateNodeData(node.id, { error: res.error, isExecuting: false });
+          }
+
+        } else if (node.type === "extractFrame") {
+          let videoUrl = (node.data.video_url as string) || "";
+          let timestamp = (node.data.timestamp as string) || "0";
+
+          for (const depId of deps) {
+            const edge = edges.find(e => e.source === depId && e.target === node.id);
+            const depNode = nodes.find(n => n.id === depId);
+            if (!edge || !depNode) continue;
+
+            const val = depNode.data.text || depNode.data.videoUrl || depNode.data.imageUrl;
+            if (edge.targetHandle === "video_url" && val) videoUrl = val as string;
+            if (edge.targetHandle === "timestamp" && val) timestamp = val as string;
+          }
+
+          if (!videoUrl) throw new Error("Missing video_url for Extract Frame");
+
+          const res = await executeExtractAction({ videoUrl, timestamp });
+          if (res.success) {
+            updateNodeData(node.id, { text: res.url, isExecuting: false });
+          } else {
+            updateNodeData(node.id, { error: res.error, isExecuting: false });
+          }
+
         } else {
           // Mock execution delay for other nodes
           await new Promise(resolve => setTimeout(resolve, Math.random() * 500 + 500));
+          
+          // Pass data forward if it's text/image/video
+          const sourceDepId = deps[0];
+          if (sourceDepId && node.type !== "uploadImage" && node.type !== "uploadVideo") {
+            const depNode = nodes.find(n => n.id === sourceDepId);
+            if (depNode && (depNode.data.text || depNode.data.imageUrl || depNode.data.videoUrl)) {
+               updateNodeData(node.id, { text: depNode.data.text || depNode.data.imageUrl || depNode.data.videoUrl, isExecuting: false });
+               console.log(`[DONE] Finished node: ${node.id}`);
+               return;
+            }
+          }
+          
           updateNodeData(node.id, { isExecuting: false });
         }
       } catch (err: any) {

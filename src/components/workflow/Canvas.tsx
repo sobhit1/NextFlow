@@ -16,6 +16,8 @@ import { TextNode } from "./nodes/TextNode";
 import { LlmNode } from "./nodes/LlmNode";
 import { ImageUploadNode } from "./nodes/ImageUploadNode";
 import { VideoUploadNode } from "./nodes/VideoUploadNode";
+import { CropImageNode } from "./nodes/CropImageNode";
+import { ExtractFrameNode } from "./nodes/ExtractFrameNode";
 
 import { useWorkflowStore } from "@/store/workflowStore";
 import { isValidConnection } from "@/lib/connectionValidation";
@@ -38,6 +40,8 @@ export default function Canvas() {
     llm: LlmNode,
     uploadImage: ImageUploadNode,
     uploadVideo: VideoUploadNode,
+    cropImage: CropImageNode,
+    extractFrame: ExtractFrameNode,
   }), []);
 
   const checkConnection = useCallback(
