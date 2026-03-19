@@ -13,6 +13,7 @@ import "@xyflow/react/dist/style.css";
 
 import { DefaultNode } from "./nodes/DefaultNode";
 import { TextNode } from "./nodes/TextNode";
+import { LlmNode } from "./nodes/LlmNode";
 
 import { useWorkflowStore } from "@/store/workflowStore";
 import { isValidConnection } from "@/lib/connectionValidation";
@@ -27,10 +28,12 @@ export default function Canvas() {
   const onNodesChange = useWorkflowStore((state) => state.onNodesChange);
   const onEdgesChange = useWorkflowStore((state) => state.onEdgesChange);
   const onConnect = useWorkflowStore((state) => state.onConnect);
+  const updateNodeData = useWorkflowStore((state) => state.updateNodeData);
 
   const nodeTypes = useMemo(() => ({
     default: DefaultNode,
     text: TextNode,
+    llm: LlmNode,
   }), []);
 
   const checkConnection = useCallback(
@@ -39,7 +42,7 @@ export default function Canvas() {
   );
 
   const handleRun = () => {
-    executeWorkflowLocally(nodes, edges);
+    executeWorkflowLocally(nodes, edges, updateNodeData);
   };
 
   return (

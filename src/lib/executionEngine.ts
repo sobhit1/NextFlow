@@ -52,7 +52,13 @@ export function topologicalSort(nodes: AppNode[], edges: Edge[]): string[] {
   return sorted;
 }
 
-export async function executeWorkflowLocally(nodes: AppNode[], edges: Edge[]) {
+import { executeLlmAction } from "@/app/actions/runLlm";
+
+export async function executeWorkflowLocally(
+  nodes: AppNode[], 
+  edges: Edge[],
+  updateNodeData: (id: string, data: any) => void
+) {
   try {
     const sortedNodeIds = topologicalSort(nodes, edges);
     console.log("Execution order:", sortedNodeIds);
@@ -87,8 +93,49 @@ export async function executeWorkflowLocally(nodes: AppNode[], edges: Edge[]) {
 
       // 2. Execute this node
       console.log(`[START] Executing node: ${node.id} (${node.type})`);
-      // Mock execution delay
-      await new Promise(resolve => setTimeout(resolve, Math.random() * 500 + 500));
+      updateNodeData(node.id, { isExecuting: true, error: null });
+
+      try {
+        if (node.type === "llm") {
+          // Extract inputs from incoming edges
+          let systemPrompt = "";
+          let userMessage = "";
+          const images: { mimeType: string; data: string }[] = [];
+
+          for (const depId of deps) {
+            const edge = edges.find(e => e.source === depId && e.target === node.id);
+            const depNode = nodes.find(n => n.id === depId);
+            if (!edge || !depNode) continue;
+
+            if (edge.targetHandle === "system_prompt") systemPrompt = depNode.data.text as string;
+            if (edge.targetHandle === "user_message") userMessage = depNode.data.text as string;
+            if (edge.targetHandle === "images" && depNode.data.imageUrl) {
+              // We'll pass the URL directly if we support it, or fetch and convert.
+              // For now we'll assume the URL works if using base64 or transloadit URL
+              // We'd need to fetch and convert to base64 if Gemini requires it, 
+              // but Gemini also accepts File API. For the scope of this step, we'll map URL.
+            }
+          }
+
+          const res = await executeLlmAction({
+            systemPrompt: systemPrompt || undefined,
+            userMessage: userMessage || "Hello", // fallback
+            model: (node.data.model as string) || "gemini-2.5-flash",
+          });
+
+          if (res.success) {
+            updateNodeData(node.id, { text: res.text, isExecuting: false });
+          } else {
+            updateNodeData(node.id, { error: res.error, isExecuting: false });
+          }
+        } else {
+          // Mock execution delay for other nodes
+          await new Promise(resolve => setTimeout(resolve, Math.random() * 500 + 500));
+          updateNodeData(node.id, { isExecuting: false });
+        }
+      } catch (err: any) {
+        updateNodeData(node.id, { error: err.message, isExecuting: false });
+      }
       console.log(`[DONE] Finished node: ${node.id}`);
     };
 
