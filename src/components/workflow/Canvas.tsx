@@ -12,6 +12,7 @@ import {
 import "@xyflow/react/dist/style.css";
 
 import { DefaultNode } from "./nodes/DefaultNode";
+import { TextNode } from "./nodes/TextNode";
 
 import { useWorkflowStore } from "@/store/workflowStore";
 
@@ -24,6 +25,7 @@ export default function Canvas() {
 
   const nodeTypes = useMemo(() => ({
     default: DefaultNode,
+    text: TextNode,
   }), []);
 
   return (
