@@ -1,5 +1,6 @@
 "use server";
 
+// @ts-ignore
 import Transloadit from "transloadit";
 
 export async function uploadToTransloadit(formData: FormData): Promise<{ success: boolean; url?: string; error?: string }> {

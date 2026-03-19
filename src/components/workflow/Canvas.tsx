@@ -15,6 +15,7 @@ import { DefaultNode } from "./nodes/DefaultNode";
 import { TextNode } from "./nodes/TextNode";
 import { LlmNode } from "./nodes/LlmNode";
 import { ImageUploadNode } from "./nodes/ImageUploadNode";
+import { VideoUploadNode } from "./nodes/VideoUploadNode";
 
 import { useWorkflowStore } from "@/store/workflowStore";
 import { isValidConnection } from "@/lib/connectionValidation";
@@ -36,6 +37,7 @@ export default function Canvas() {
     text: TextNode,
     llm: LlmNode,
     uploadImage: ImageUploadNode,
+    uploadVideo: VideoUploadNode,
   }), []);
 
   const checkConnection = useCallback(
