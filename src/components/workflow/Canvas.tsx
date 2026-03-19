@@ -14,6 +14,7 @@ import "@xyflow/react/dist/style.css";
 import { DefaultNode } from "./nodes/DefaultNode";
 import { TextNode } from "./nodes/TextNode";
 import { LlmNode } from "./nodes/LlmNode";
+import { ImageUploadNode } from "./nodes/ImageUploadNode";
 
 import { useWorkflowStore } from "@/store/workflowStore";
 import { isValidConnection } from "@/lib/connectionValidation";
@@ -34,6 +35,7 @@ export default function Canvas() {
     default: DefaultNode,
     text: TextNode,
     llm: LlmNode,
+    uploadImage: ImageUploadNode,
   }), []);
 
   const checkConnection = useCallback(

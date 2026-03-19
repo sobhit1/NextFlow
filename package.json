@@ -11,6 +11,10 @@
   "dependencies": {
     "@google/generative-ai": "^0.24.1",
     "@trigger.dev/sdk": "^4.4.3",
+    "@uppy/core": "^5.2.0",
+    "@uppy/dashboard": "^5.1.1",
+    "@uppy/react": "^5.2.0",
+    "@uppy/transloadit": "^5.5.0",
     "@xyflow/react": "^12.10.1",
     "clsx": "^2.1.1",
     "lucide-react": "^0.577.0",
@@ -19,6 +23,7 @@
     "react": "19.2.4",
     "react-dom": "19.2.4",
     "tailwind-merge": "^3.5.0",
+    "transloadit": "^4.7.4",
     "trigger.dev": "^4.4.3",
     "zustand": "^5.0.12"
   },
