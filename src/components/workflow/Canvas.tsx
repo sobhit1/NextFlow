@@ -1,5 +1,7 @@
 "use client";
 
+import { useMemo } from "react";
+
 import {
   ReactFlow,
   Background,
@@ -8,6 +10,8 @@ import {
   BackgroundVariant,
 } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
+
+import { DefaultNode } from "./nodes/DefaultNode";
 
 import { useWorkflowStore } from "@/store/workflowStore";
 
@@ -18,11 +22,16 @@ export default function Canvas() {
   const onEdgesChange = useWorkflowStore((state) => state.onEdgesChange);
   const onConnect = useWorkflowStore((state) => state.onConnect);
 
+  const nodeTypes = useMemo(() => ({
+    default: DefaultNode,
+  }), []);
+
   return (
     <div className="w-full h-full">
       <ReactFlow
         nodes={nodes}
         edges={edges}
+        nodeTypes={nodeTypes}
         onNodesChange={onNodesChange}
         onEdgesChange={onEdgesChange}
         onConnect={onConnect}
